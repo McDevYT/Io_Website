@@ -6,11 +6,13 @@ const io = require('socket.io')(http, {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log('Player {socket.id} connected');
+
+    socket.
 
     socket.on('message', (message) =>     {
         console.log(message);
-        io.emit('message', `${socket.id.substr(0,2)} said ${message}` );   
+        io.emit('message', `${socket.id} said ${message}` );   
     });
 });
 
