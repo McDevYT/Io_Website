@@ -1,6 +1,6 @@
 "use strict";
 var _a, _b;
-const socket = io('http://172.0.0.1:3000');
+const socket = io('http://localhost:3000');
 const counterDisplay = document.getElementById("counterDisplay");
 const incrementButton = document.getElementById("incrementButton");
 if (incrementButton) {

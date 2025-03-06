@@ -10,11 +10,10 @@ const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: "*",
+        origin: "http://127.0.0.1:5500",
         methods: ["GET", "POST"]
     }
 });
-app.use(express_1.default.static("public"));
 let counter = 0;
 io.on('connection', (socket) => {
     console.log(`Player ${socket.id} connected`);

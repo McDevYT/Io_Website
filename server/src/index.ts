@@ -6,12 +6,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "http://127.0.0.1:5500",
         methods: ["GET", "POST"]
     }
 });
-
-app.use(express.static("public"));
 
 interface PlayerSocket extends Socket{
     data:{
