@@ -1,4 +1,20 @@
-const socket = io('ws://localhost:3000');
+const socket = io('http://192.168.56.1:3000');
+
+const counterDisplay = document.getElementById("counterDisplay") as HTMLSpanElement;
+const incrementButton = document.getElementById("incrementButton");
+
+if (incrementButton){
+    incrementButton.addEventListener("click", () => {
+        console.log("ButtonClick");
+        socket.emit("incrementCounter");
+    });
+}
+
+socket.on("updateCounter", (newCounter: number) =>{
+    if (counterDisplay){
+        counterDisplay.textContent = newCounter.toString();
+    }
+})
 
 socket.on('message', (text: string) => {
 
@@ -13,4 +29,7 @@ document.querySelector('button')?.addEventListener('click', () => {
     socket.emit('message', text);
 });
 
-console.log("Hello World");
+document.getElementById('usernameButton')?.addEventListener('click', () => {
+    const text = (document.getElementById('usernameInput') as HTMLInputElement)?.value.trim();
+    if (text) socket.emit('newUsername', text);
+});
