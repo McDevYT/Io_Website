@@ -10,33 +10,54 @@ const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: "http://127.0.0.1:5500",
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
-let counter = 0;
+const players = {};
+const getRandomColor = () => "#" + Math.floor(Math.random() * 16777215).toString(16);
 io.on('connection', (socket) => {
     console.log(`Player ${socket.id} connected`);
-    socket.data.score = 0;
-    socket.data.username = "new User";
-    socket.emit("updateCounter", counter);
-    socket.on("incrementCounter", () => {
-        counter += 1;
-        console.log(`Counter updated: ${counter}`);
-        io.emit("updateCounter", counter);
-    });
-    socket.on('message', (message) => {
-        console.log(message);
-        io.emit('message', `${socket.data.username} with score ${socket.data.score} said ${message}.`);
-        socket.data.score += 1;
-    });
+    // Initialize player with random position and color
+    players[socket.id] = {
+        id: socket.id,
+        x: Math.random() * 400,
+        y: Math.random() * 400,
+        color: getRandomColor(),
+        username: "New User",
+        speed: 5
+    };
+    const player = players[socket.id];
+    // Emit initial player data to all clients
+    io.emit("updatePlayers", players);
+    // Handle username change
     socket.on('newUsername', (username) => {
         console.log(username);
-        io.emit('message', `${socket.data.username} changed his username to ${username}`);
         socket.data.username = username;
     });
+    // Handle movement
+    socket.on("move", (keysPressed) => {
+        const player = players[socket.id];
+        if (!player)
+            return;
+        const speed = player.speed;
+        // Update the player's position based on the keys pressed
+        if (keysPressed.w)
+            player.y -= speed;
+        if (keysPressed.s)
+            player.y += speed;
+        if (keysPressed.a)
+            player.x -= speed;
+        if (keysPressed.d)
+            player.x += speed;
+        // Emit the updated players' positions to all clients
+        io.emit("updatePlayers", players);
+    });
+    // Handle disconnection
     socket.on('disconnect', () => {
         console.log(`Player ${socket.id} disconnected`);
+        delete players[socket.id];
+        io.emit("updatePlayers", players);
     });
 });
 server.listen(3000, () => {

@@ -6,53 +6,73 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://127.0.0.1:5500",
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
-interface PlayerSocket extends Socket{
-    data:{
-        score: number;
-        username: string;
-    }
+interface Player {
+    id: string;
+    x: number;
+    y: number;
+    color: string;
+    username: string;
+    speed: number;
 }
 
-let counter = 0;
+const players: Record<string, Player> = {};
 
-io.on('connection', (socket: PlayerSocket) => {
+const getRandomColor = () => "#" + Math.floor(Math.random() * 16777215).toString(16);
+
+io.on('connection', (socket: Socket) => {
     console.log(`Player ${socket.id} connected`);
 
-    socket.data.score = 0;
-    socket.data.username = "new User";
+    // Initialize player with random position and color
+    players[socket.id] = {
+        id: socket.id,
+        x: Math.random() * 400,
+        y: Math.random() * 400,
+        color: getRandomColor(),
+        username: "New User",
+        speed: 5
+    };
 
-    socket.emit("updateCounter", counter);
+    const player = players[socket.id];
 
-    socket.on("incrementCounter", () => {
-        counter += 1;
-        console.log(`Counter updated: ${counter}`);
+    // Emit initial player data to all clients
+    io.emit("updatePlayers", players);
 
-        io.emit("updateCounter", counter);
-    });
-
-    socket.on('message', (message: string) => {
-        console.log(message);
-        io.emit('message', `${socket.data.username} with score ${socket.data.score} said ${message}.` );   
-        socket.data.score += 1;
-    });
-
+    // Handle username change
     socket.on('newUsername', (username: string) => {
         console.log(username);
-        io.emit('message', `${socket.data.username} changed his username to ${username}` );   
         socket.data.username = username;
     });
 
+    // Handle movement
+    socket.on("move", (keysPressed: Record<string, boolean>) => {
+        const player = players[socket.id];
+        if (!player) return;
+
+        const speed = player.speed;
+
+        // Update the player's position based on the keys pressed
+        if (keysPressed.w) player.y -= speed;
+        if (keysPressed.s) player.y += speed;
+        if (keysPressed.a) player.x -= speed;
+        if (keysPressed.d) player.x += speed;
+
+        // Emit the updated players' positions to all clients
+        io.emit("updatePlayers", players);
+    });
+
+    // Handle disconnection
     socket.on('disconnect', () => {
         console.log(`Player ${socket.id} disconnected`);
+        delete players[socket.id];
+        io.emit("updatePlayers", players);
     });
 });
 
-server.listen(3000,() =>{
+server.listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
 });
-
