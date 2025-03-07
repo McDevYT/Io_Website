@@ -42,12 +42,6 @@ io.on('connection', (socket: Socket) => {
     // Emit initial player data to all clients
     io.emit("updatePlayers", players);
 
-    // Handle username change
-    socket.on('newUsername', (username: string) => {
-        console.log(username);
-        socket.data.username = username;
-    });
-
     // Handle movement
     socket.on("move", (keysPressed: Record<string, boolean>) => {
         const player = players[socket.id];

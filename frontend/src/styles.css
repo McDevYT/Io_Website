@@ -1,75 +1,10 @@
-* {
+html, body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-}
-
-/* General Styles */
-body, html {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-  margin: 0;
-  padding: 0;
+  overflow: hidden;
+  width: 100%;
   height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  position: relative;
 }
-
-/* Topbar Styles */
-.topbar {
-  width: 100%;
-  background-color: #333;
-  color: white;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  position: relative;
-  z-index: 1;
-}
-
-/* Username Section */
-.username-container {
-  margin-top: 10px;
-}
-
-input {
-  width: 80%;
-  padding: 8px;
-  margin-top: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-/* Buttons */
-button {
-  padding: 10px 15px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: 0.3s ease-in-out;
-}
-
-button:hover {
-  opacity: 0.8;
-}
-
-#usernameButton {
-  background-color: #28a745;
-  color: white;
-}
-
-/* Canvas Styles */
 canvas {
-  position: absolute;
-  top: 80px; /* Start canvas below the topbar */
-  left: 0;
-  width: 100%;
-  height: calc(100% - 80px); /* Take up the remaining height after the topbar */
-  z-index: -1; /* Keep canvas behind the topbar */
+  display: block;
 }
