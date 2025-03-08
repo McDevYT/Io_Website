@@ -15,43 +15,28 @@ const io = new socket_io_1.Server(server, {
     }
 });
 const players = {};
-const getRandomColor = () => "#" + Math.floor(Math.random() * 16777215).toString(16);
 io.on('connection', (socket) => {
     console.log(`Player ${socket.id} connected`);
+    socket.on("ping", (callback) => {
+        callback();
+    });
     // Initialize player with random position and color
     players[socket.id] = {
         id: socket.id,
         x: Math.random() * 400,
         y: Math.random() * 400,
-        color: getRandomColor(),
+        texture: "green_character.png",
         username: "New User",
-        speed: 5
+        speed: 10,
+        keys: {}
     };
-    const player = players[socket.id];
-    // Emit initial player data to all clients
+    console.log(Object.values(players).length);
     io.emit("updatePlayers", players);
-    // Handle username change
-    socket.on('newUsername', (username) => {
-        console.log(username);
-        socket.data.username = username;
-    });
     // Handle movement
     socket.on("move", (keysPressed) => {
-        const player = players[socket.id];
-        if (!player)
-            return;
-        const speed = player.speed;
-        // Update the player's position based on the keys pressed
-        if (keysPressed.w)
-            player.y -= speed;
-        if (keysPressed.s)
-            player.y += speed;
-        if (keysPressed.a)
-            player.x -= speed;
-        if (keysPressed.d)
-            player.x += speed;
-        // Emit the updated players' positions to all clients
-        io.emit("updatePlayers", players);
+        if (players[socket.id]) {
+            players[socket.id].keys = keysPressed;
+        }
     });
     // Handle disconnection
     socket.on('disconnect', () => {
@@ -60,6 +45,35 @@ io.on('connection', (socket) => {
         io.emit("updatePlayers", players);
     });
 });
+setInterval(() => {
+    const movedPlayers = {};
+    for (const id in players) {
+        const player = players[id];
+        const speed = player.speed;
+        let moved = false;
+        if (player.keys.w) {
+            player.y -= speed;
+            moved = true;
+        }
+        if (player.keys.s) {
+            player.y += speed;
+            moved = true;
+        }
+        if (player.keys.a) {
+            player.x -= speed;
+            moved = true;
+        }
+        if (player.keys.d) {
+            player.x += speed;
+            moved = true;
+        }
+        if (moved) {
+            movedPlayers[id] = player;
+        }
+    }
+    if (Object.keys(movedPlayers).length != 0)
+        io.emit("movePlayers", movedPlayers);
+}, 1000 / 60);
 server.listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
 });

@@ -1,6 +1,6 @@
 # Basic Socket.io Demo
 
-A bare minimum Socket.io implementation. Learn about [Websockets & Socket.io](https://youtu.be/1BfCnjr_Vjg) on Youtube. 
+A bare minimum Socket.io implementation.
 
 ## Run it
 
@@ -9,5 +9,7 @@ cd server
 npm install
 npm start
 ```
+cd frontend
+npm run dev
 
-Open the `app/index.html` file in a browser. 
+Open http://localhost:5173/ in the browser
