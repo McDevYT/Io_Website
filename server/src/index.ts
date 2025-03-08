@@ -15,6 +15,7 @@ interface Player {
     id: string;
     x: number;
     y: number;
+    rotation: number;
     texture: string;
     username: string;
     speed: number;
@@ -32,11 +33,12 @@ io.on('connection', (socket: Socket) => {
     // Initialize player with random position and color
     players[socket.id] = {
         id: socket.id,
-        x: Math.random() * 400,
-        y: Math.random() * 400,
-        texture: "green_character.png",
+        x: 0,
+        y: 0,
+        rotation: 90,
+        texture: "player_4.png",
         username: "New User",
-        speed: 10,
+        speed: 30,
         keys: {}
     };
 
@@ -51,6 +53,12 @@ io.on('connection', (socket: Socket) => {
         }
     });
 
+    socket.on("rotate", (angle: number) => {
+        if (players[socket.id]){
+            players[socket.id].rotation = angle;
+        }
+    });
+
     // Handle disconnection
     socket.on('disconnect', () => {
         console.log(`Player ${socket.id} disconnected`);
@@ -60,7 +68,8 @@ io.on('connection', (socket: Socket) => {
 });
 
 setInterval(()=>{
-    const movedPlayers: Record<string, Player> = {};
+    const movedPlayers: Record<string, {x: number,y: number}> = {};
+    const playerRotations: Record<string, number> = {};
 
     for (const id in players) {
         const player = players[id];
@@ -73,15 +82,21 @@ setInterval(()=>{
         if (player.keys.a) { player.x -= speed; moved = true; }
         if (player.keys.d) { player.x += speed; moved = true; }
     
+        player.x = Math.max(-500, Math.min(player.x, 500));
+        player.y = Math.max(-500, Math.min(player.y, 500));
+
         if (moved) {
-            movedPlayers[id] = player;
+            movedPlayers[id] = { x:player.x,y: player.y};
         }
+        playerRotations[id] = player.rotation;
     }
 
     if (Object.keys(movedPlayers).length != 0)
         io.emit("movePlayers", movedPlayers);
+    io.emit("rotatePlayers", playerRotations);
 
-}, 1000 / 60);
+
+}, 1000 / 20);
 
 server.listen(3000, () => {
     console.log("Server is running on http://localhost:3000");

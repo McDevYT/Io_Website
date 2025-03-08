@@ -23,11 +23,12 @@ io.on('connection', (socket) => {
     // Initialize player with random position and color
     players[socket.id] = {
         id: socket.id,
-        x: Math.random() * 400,
-        y: Math.random() * 400,
-        texture: "green_character.png",
+        x: 0,
+        y: 0,
+        rotation: 90,
+        texture: "player_4.png",
         username: "New User",
-        speed: 10,
+        speed: 30,
         keys: {}
     };
     console.log(Object.values(players).length);
@@ -36,6 +37,11 @@ io.on('connection', (socket) => {
     socket.on("move", (keysPressed) => {
         if (players[socket.id]) {
             players[socket.id].keys = keysPressed;
+        }
+    });
+    socket.on("rotate", (angle) => {
+        if (players[socket.id]) {
+            players[socket.id].rotation = angle;
         }
     });
     // Handle disconnection
@@ -47,6 +53,7 @@ io.on('connection', (socket) => {
 });
 setInterval(() => {
     const movedPlayers = {};
+    const playerRotations = {};
     for (const id in players) {
         const player = players[id];
         const speed = player.speed;
@@ -67,13 +74,17 @@ setInterval(() => {
             player.x += speed;
             moved = true;
         }
+        player.x = Math.max(-500, Math.min(player.x, 500));
+        player.y = Math.max(-500, Math.min(player.y, 500));
         if (moved) {
-            movedPlayers[id] = player;
+            movedPlayers[id] = { x: player.x, y: player.y };
         }
+        playerRotations[id] = player.rotation;
     }
     if (Object.keys(movedPlayers).length != 0)
         io.emit("movePlayers", movedPlayers);
-}, 1000 / 60);
+    io.emit("rotatePlayers", playerRotations);
+}, 1000 / 20);
 server.listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
 });
