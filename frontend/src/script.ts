@@ -7,6 +7,9 @@ const players: Record<string, Sprite> = {};
 const playersData: Record<string, Player> = {};
 const keysPressed: Record<string, boolean> = {};
 
+const chatMessages = document.getElementById("chatMessages") as HTMLUListElement;
+const chatInput = document.getElementById("chatInput") as HTMLInputElement;
+
 const pingText = document.getElementById("topBarText") as HTMLParagraphElement;
 let ping: any;
 
@@ -54,11 +57,8 @@ await (async function preloadAssets() {
     }
     );
 
-        // Set pivot to the center of the tiling sprite
-    // Set pivot to center the background around (0,0)
     background.pivot = background.width / 2;
 
-    // Set position to (0,0) so the center is at the stage origin
     background.position.set(0, 0);
 
     app.stage.addChild(background);
@@ -67,7 +67,7 @@ await (async function preloadAssets() {
     startGame();
 })();
 
-const socket = io('http://localhost:3000');
+const socket = io('http://10.58.118.150:3000');
 
 function startGame(){
     app.ticker.add(update);
@@ -91,7 +91,7 @@ function update(delta: Ticker){
 
         if (!sprite || !playerData) continue;
 
-        const lerpFactor = 0.1; // Adjust for smoother or faster movement
+        const lerpFactor = 0.15;
         sprite.x += (playerData.x - sprite.x) * lerpFactor;
         sprite.y += (playerData.y - sprite.y) * lerpFactor;
 
@@ -130,6 +130,10 @@ socket.on("updatePlayers", (serverPlayers: Record<string, Player>) => {
             delete players[id];
         }
     }
+});
+
+socket.on("chatMessage", (message: string) => {
+    addChatMessage(message);
 });
 
 socket.on("movePlayers", (serverPlayers: Record<string, {x: number, y: number}>) => {
@@ -181,7 +185,7 @@ function updateCameraPos(){
     const localPlayer = players[socket.id];
     if (!localPlayer) return;
 
-    const cameraSpeed = 1;
+    const cameraSpeed = 0.4;
     const centerX = app.screen.width / 2;
     const centerY = app.screen.height / 2;
 
@@ -192,6 +196,25 @@ function updateCameraPos(){
     app.stage.y += (targetY - app.stage.y) * cameraSpeed;
 }
 
+function addChatMessage(message: string){
+    if (!message.trim()) return;
+
+    const messageElement = document.createElement("li");
+    messageElement.textContent = message;
+    chatMessages.appendChild(messageElement);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+chatInput.addEventListener("keydown", (event) =>{
+    const message = chatInput.value;
+    if (event.key == "Enter" && message.trim()){
+        event.preventDefault();
+        socket.emit("chatMessage", message);
+        chatInput.value = "";
+    }
+})
+
 document.addEventListener("contextmenu", function (event) {
     event.preventDefault();
-  });
+});

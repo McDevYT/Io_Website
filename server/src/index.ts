@@ -2,6 +2,8 @@ import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
 
+const positionEmitIntervall = 25;
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -38,7 +40,7 @@ io.on('connection', (socket: Socket) => {
         rotation: 90,
         texture: "player_4.png",
         username: "New User",
-        speed: 30,
+        speed: 500,
         keys: {}
     };
 
@@ -46,7 +48,10 @@ io.on('connection', (socket: Socket) => {
 
     io.emit("updatePlayers", players);
 
-    // Handle movement
+    socket.on("chatMessage", (message: string) =>{
+        socket.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+    });
+
     socket.on("move", (keysPressed: Record<string, boolean>) => {
         if (players[socket.id]){
             players[socket.id].keys = keysPressed;
@@ -77,10 +82,10 @@ setInterval(()=>{
     
         let moved = false;
         
-        if (player.keys.w) { player.y -= speed; moved = true; }
-        if (player.keys.s) { player.y += speed; moved = true; }
-        if (player.keys.a) { player.x -= speed; moved = true; }
-        if (player.keys.d) { player.x += speed; moved = true; }
+        if (player.keys.w) { player.y -= speed / positionEmitIntervall; moved = true; }
+        if (player.keys.s) { player.y += speed / positionEmitIntervall; moved = true; }
+        if (player.keys.a) { player.x -= speed / positionEmitIntervall; moved = true; }
+        if (player.keys.d) { player.x += speed / positionEmitIntervall; moved = true; }
     
         player.x = Math.max(-500, Math.min(player.x, 500));
         player.y = Math.max(-500, Math.min(player.y, 500));
@@ -96,8 +101,8 @@ setInterval(()=>{
     io.emit("rotatePlayers", playerRotations);
 
 
-}, 1000 / 20);
+}, 1000 / positionEmitIntervall);
 
-server.listen(3000, () => {
+server.listen(3000,"0.0.0.0", () => {
     console.log("Server is running on http://localhost:3000");
 });
