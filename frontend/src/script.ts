@@ -51,8 +51,8 @@ await (async function preloadAssets() {
 
     background = new TilingSprite({
         texture: textures["backgroundTile.png"],
-        width: 300,
-        height: 300,
+        width: 2000,
+        height: 1000,
         scale: 2,
     }
     );
@@ -64,15 +64,16 @@ await (async function preloadAssets() {
     app.stage.addChild(background);
 
     console.log("Finished loading!");
-    startGame();
+
 })();
 
-const socket = io('http://10.58.118.150:3000');
+const socket = io('http://192.168.178.29:3000');
 
 function startGame(){
+    fadeOut(document.getElementById("mainMenu") as HTMLElement);
+
     app.ticker.add(update);
     document.addEventListener("pointermove", (e) =>{
-        console.log("updating rotation");
         const localPlayer = players[socket.id];
         if (!localPlayer) return;
 
@@ -92,8 +93,8 @@ function update(delta: Ticker){
         if (!sprite || !playerData) continue;
 
         const lerpFactor = 0.15;
-        sprite.x += (playerData.x - sprite.x) * lerpFactor;
-        sprite.y += (playerData.y - sprite.y) * lerpFactor;
+        sprite.x += (playerData.x - sprite.x) * lerpFactor * delta.deltaTime;
+        sprite.y += (playerData.y - sprite.y) * lerpFactor * delta.deltaTime;
 
         if (id !== socket.id) {
             let deltaRotation = (playerData.rotation - sprite.rotation + Math.PI) % (2 * Math.PI) - Math.PI;
@@ -101,7 +102,7 @@ function update(delta: Ticker){
         }
     }
  
-    updateCameraPos();
+    updateCameraPos(delta);
 }
 
 socket.on("updatePlayers", (serverPlayers: Record<string, Player>) => {
@@ -181,7 +182,7 @@ setInterval(() => {
     });
 }, 1000);
 
-function updateCameraPos(){
+function updateCameraPos(delta: Ticker){
     const localPlayer = players[socket.id];
     if (!localPlayer) return;
 
@@ -192,8 +193,8 @@ function updateCameraPos(){
     const targetX = -localPlayer.x - centerX;
     const targetY = -localPlayer.y - centerY;
 
-    app.stage.x += (targetX - app.stage.x) * cameraSpeed;
-    app.stage.y += (targetY - app.stage.y) * cameraSpeed;
+    app.stage.x += (targetX - app.stage.x) * cameraSpeed * delta.deltaTime;
+    app.stage.y += (targetY - app.stage.y) * cameraSpeed * delta.deltaTime;
 }
 
 function addChatMessage(message: string){
@@ -217,4 +218,49 @@ chatInput.addEventListener("keydown", (event) =>{
 
 document.addEventListener("contextmenu", function (event) {
     event.preventDefault();
+});
+
+function showPopup(message: string): void {
+    const popUp = document.getElementById("popUp") as HTMLElement;
+    const popUpText = document.getElementById("popUpText") as HTMLElement;
+
+    popUpText.textContent = message;
+    fadeIn(popUp);
+}
+
+function hidePopup(): void {
+    const popUp = document.getElementById("popUp") as HTMLElement;
+    fadeOut(popUp);
+}
+
+function fadeIn(element: HTMLElement){
+    
+    element.style.opacity = '1';
+
+    element.classList.remove('fade');
+    element.style.pointerEvents = 'auto';
+}
+
+function fadeOut(element: HTMLElement){
+
+    element.style.opacity = '0';
+
+    element.addEventListener('transitionend', () => {
+        element.style.pointerEvents = 'none';
+    }, { once: true });
+
+    element.classList.add('fade');
+}
+
+document.getElementById("startGameButton")?.addEventListener("click", () => {
+    try{
+        startGame();
+    }catch{
+        showPopup("Failed!");
+    }
+    
+});
+
+document.querySelector("#popUp button")?.addEventListener("click", () => {
+    hidePopup();
 });

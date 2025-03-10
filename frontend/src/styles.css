@@ -1,75 +1,151 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600&display=swap');
 
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  font-family: 'Rajdhani', sans-serif; /* Modern, clean font */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-canvas {
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1; /* Canvas stays in the background */
+body {
+    font-family: 'Rajdhani', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1e1e1e;
+    color: #fff;
 }
 
 #canvasOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1; /* Higher than canvas */
-  pointer-events: none; /* Ensures clicks go through to canvas */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    user-select: none;
+    pointer-events: visible;
 }
 
-#topBarText {
-  font-size: 24px;
-  font-weight: bold;
-  color: aqua;
-  margin: 10px;
-  font-family: 'Rajdhani', sans-serif;
-}
-
-/* Chat Box */
 #chatContainer {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 250px;
-  height: 200px;
-  background: none; /* No background as requested */
-  border: 1px solid rgba(200, 200, 200, 0.8); /* Light gray-white border */
-  display: flex;
-  flex-direction: column;
-  pointer-events: auto; /* Allows interaction */
-  padding: 5px;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 2;
 }
 
-/* Messages */
 #chatMessages {
-  flex: 1; /* Takes up remaining space */
-  overflow-y: auto;
-  list-style: none;
-  padding: 5px;
-  margin: 0;
-  font-size: 14px;
-  color: white;
-  font-family: 'Rajdhani', sans-serif;
+    list-style-type: none;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-/* Input */
 #chatInput {
-  width: calc(100% - 10px);
-  padding: 5px;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  background: none;
-  color: white;
-  border-top: 1px solid rgba(200, 200, 200, 0.8); /* Matches chat border */
-  font-family: 'Rajdhani', sans-serif;
+    width: 100%;
+    padding: 5px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: white;
+}
+
+#mainMenu {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 40px;
+    border-radius: 10px;
+    z-index: 2;
+    pointer-events: auto;
+    animation: fadeIn 1s forwards;
+    opacity: 1;
+    -webkit-transition: opacity 0.3s ease-in-out;
+    -moz-transition: opacity 0.3s ease-in-out;
+    -ms-transition: opacity 0.3s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    user-select: none;
+}
+
+#mainMenu p {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+#usernameInput {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    border: none;
+    width: 200px;
+    font-size: 18px;
+    background-color: #333;
+    color: white;
+}
+
+#startGameButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+#startGameButton:hover {
+    background-color: #0056b3;
+}
+
+#popUp {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    z-index: 3;
+    pointer-events: none;
+    min-width: 450px;
+    min-height: 250px;
+    -webkit-transition: opacity 0.3s ease-in-out;
+    -moz-transition: opacity 0.3s ease-in-out;
+    -ms-transition: opacity 0.3s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    user-select: none;
+}
+
+#popUp p {
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+#popUp button {
+    padding: 10px 60px;
+    border: none;
+    margin: 40px 0 0 0;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+#popUp button:hover {
+    background-color: #0056b3;
+}
+
+#popUp.fade {
+  opacity: 0;
+  pointer-events: none; /* Ensure pointer-events is none when faded */
 }
