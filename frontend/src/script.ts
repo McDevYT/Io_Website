@@ -10,11 +10,14 @@ const keysPressed: Record<string, boolean> = {};
 
 const chatMessages = document.getElementById("chatMessages") as HTMLUListElement;
 const chatInput = document.getElementById("chatInput") as HTMLInputElement;
+const usernameInput = document.getElementById("usernameInput") as HTMLInputElement;
 
 const pingText = document.getElementById("topBarText") as HTMLParagraphElement;
 let ping: any;
 
 let background: TilingSprite;
+
+let username: String = "New User";
 
 interface Player {
     id: string;
@@ -35,7 +38,6 @@ document.body.appendChild(app.canvas);
 await (async function preloadAssets() {
     console.log("Loading Assets");
 
-    // Center the stage
     app.stage.pivot.set(-app.screen.width, -app.screen.height);
 
     const assets = [
@@ -51,11 +53,11 @@ await (async function preloadAssets() {
     }));
 
     background = new TilingSprite({
-        texture: textures["backgroundTile.png"],
-        width: 2000,
-        height: 1000,
-        scale: 2,
-    }
+            texture: textures["backgroundTile.png"],
+            width: 2000,
+            height: 1000,
+            scale: 2,
+        }
     );
 
     background.pivot = new Point(background.width / 2,background.height/2);
@@ -72,6 +74,9 @@ const socket = io('http://10.6.11.18:3000');
 
 function startGame(){
     fadeOut(document.getElementById("mainMenu") as HTMLElement);
+
+    const username = usernameInput.value;
+    socket.emit("joinGame", username);
 
     app.ticker.add(update);
     document.addEventListener("pointermove", (e) =>{
@@ -183,8 +188,6 @@ socket.on("movePlayers", (serverPlayers: Record<string, {x: number, y: number}>)
             playerData.y = serverPlayers[id].y;
         } 
     }
-
-    console.log(`${serverPlayers[socket.id]?.x}  ${serverPlayers[socket.id]?.y}`);
 });
 
 socket.on("rotatePlayers", (playerRotations: Record<string, number>) => {

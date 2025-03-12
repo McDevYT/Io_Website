@@ -21,33 +21,44 @@ io.on('connection', (socket) => {
     socket.on("ping", (callback) => {
         callback();
     });
-    // Initialize player with random position and color
-    players[socket.id] = {
-        id: socket.id,
-        x: 0,
-        y: 0,
-        rotation: 90,
-        texture: "player_4.png",
-        username: "New User",
-        speed: 500,
-        keys: {}
-    };
-    console.log(Object.values(players).length);
-    io.emit("updatePlayers", players);
-    socket.on("chatMessage", (message) => {
-        io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+    socket.on('joinGame', (username) => {
+        players[socket.id] = {
+            id: socket.id,
+            x: 0,
+            y: 0,
+            rotation: 90,
+            texture: "player_4.png",
+            username: username,
+            speed: 500,
+            keys: {}
+        };
+        console.log(Object.values(players).length);
+        io.emit("updatePlayers", players);
+        const handleChatMessage = (message) => {
+            io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+        };
+        const handleMove = (keysPressed) => {
+            if (players[socket.id]) {
+                players[socket.id].keys = keysPressed;
+            }
+        };
+        const handleRotate = (angle) => {
+            if (players[socket.id]) {
+                players[socket.id].rotation = angle;
+            }
+        };
+        socket.on("chatMessage", handleChatMessage);
+        socket.on("move", handleMove);
+        socket.on("rotate", handleRotate);
+        socket.on("leaveGame", () => {
+            socket.off("chatMessage", handleChatMessage);
+            socket.off("move", handleMove);
+            socket.off("rotate", handleRotate);
+            console.log(`Player ${socket.id} left the game`);
+            delete players[socket.id];
+            io.emit("updatePlayers", players);
+        });
     });
-    socket.on("move", (keysPressed) => {
-        if (players[socket.id]) {
-            players[socket.id].keys = keysPressed;
-        }
-    });
-    socket.on("rotate", (angle) => {
-        if (players[socket.id]) {
-            players[socket.id].rotation = angle;
-        }
-    });
-    // Handle disconnection
     socket.on('disconnect', () => {
         console.log(`Player ${socket.id} disconnected`);
         delete players[socket.id];
@@ -89,5 +100,5 @@ setInterval(() => {
     io.emit("rotatePlayers", playerRotations);
 }, 1000 / positionEmitIntervall);
 server.listen(3000, "0.0.0.0", () => {
-    console.log("Server is running on http://localhost:3000");
+    console.log(`Server is running on port 3000`);
 });
