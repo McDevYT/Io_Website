@@ -1,9 +1,10 @@
-import { Application, Assets, Point, Sprite, Texture, Ticker, TilingSprite } from "pixi.js";
+import { Application, Assets, Container, Point, Sprite, Texture, Ticker, TilingSprite, Text, TextStyle } from "pixi.js";
 
 let app: Application;
 
 const textures: Record<string, Texture> = {};
-const players: Record<string, Sprite> = {};
+const playerContainers: Record<string, Container> = {};
+const playersSprites: Record<string, Sprite> = {};
 const playersData: Record<string, Player> = {};
 const keysPressed: Record<string, boolean> = {};
 
@@ -57,7 +58,7 @@ await (async function preloadAssets() {
     }
     );
 
-    background.pivot = background.width / 2;
+    background.pivot = new Point(background.width / 2,background.height/2);
 
     background.position.set(0, 0);
 
@@ -67,78 +68,112 @@ await (async function preloadAssets() {
 
 })();
 
-const socket = io('http://192.168.178.29:3000');
+const socket = io('http://10.6.11.18:3000');
 
 function startGame(){
     fadeOut(document.getElementById("mainMenu") as HTMLElement);
 
     app.ticker.add(update);
     document.addEventListener("pointermove", (e) =>{
-        const localPlayer = players[socket.id];
-        if (!localPlayer) return;
+        const playerContainer = playerContainers[socket.id];
+        if (!playerContainer) return;
 
         const mousePos = app.stage.toLocal(new Point(e.pageX, e.pageY));
     
-        const angle = Math.atan2(mousePos.y - localPlayer.y, mousePos.x - localPlayer.x );
-        localPlayer.rotation = angle;
+        const angle = Math.atan2(mousePos.y - playerContainer.y, mousePos.x - playerContainer.x );
+        playerContainer.children[0].rotation = angle;
         socket.emit("rotate", angle);
     });
 }
 
 function update(delta: Ticker){
-    for (const id in players) {
-        const sprite = players[id];
+    for (const id in playerContainers) {
+        const spriteContainer = playerContainers[id];
         const playerData = playersData[id];
 
-        if (!sprite || !playerData) continue;
+        if (!spriteContainer || !playerData) continue;
 
         const lerpFactor = 0.15;
-        sprite.x += (playerData.x - sprite.x) * lerpFactor * delta.deltaTime;
-        sprite.y += (playerData.y - sprite.y) * lerpFactor * delta.deltaTime;
+        spriteContainer.x += (playerData.x - spriteContainer.x) * lerpFactor * delta.deltaTime;
+        spriteContainer.y += (playerData.y - spriteContainer.y) * lerpFactor * delta.deltaTime;
 
         if (id !== socket.id) {
-            let deltaRotation = (playerData.rotation - sprite.rotation + Math.PI) % (2 * Math.PI) - Math.PI;
-            sprite.rotation += deltaRotation * lerpFactor;
+            const rotationLerpFactor = 0.16;
+            let targetRotation = playerData.rotation;
+            let currentRotation = spriteContainer.children[0].rotation;
+        
+            let deltaRotation = rLerp(currentRotation,targetRotation,rotationLerpFactor);
+        
+            spriteContainer.children[0].rotation = deltaRotation;
         }
     }
  
     updateCameraPos(delta);
 }
 
+function rLerp (A:number, B:number, w:number) {
+    let CS = (1-w)*Math.cos(A) + w*Math.cos(B);
+    let SN = (1-w)*Math.sin(A) + w*Math.sin(B);
+    return Math.atan2(SN,CS);
+}
+
 socket.on("updatePlayers", (serverPlayers: Record<string, Player>) => {
-    console.log("Received updatePlayers event");
     for (const player of Object.values(serverPlayers)) {
-        let sprite = players[player.id];
+        let playerContainer = playerContainers[player.id];
 
         playersData[player.id] = player;
 
-        if (!sprite) {
-            const texture = textures[player.texture] || textures["green_character.png"];
-            sprite = new Sprite(texture);
+        if (!playerContainer) {
+            const texture = textures[player.texture] || textures["player_1.png"];
+            const sprite = new Sprite(texture);
+            playerContainer = new Container();
+            playerContainers[player.id] = playerContainer;
+            playersSprites[player.id] = sprite;
+
             sprite.anchor = 0.5;
             sprite.scale = 2.5;
-            app.stage.addChild(sprite);
-            players[player.id] = sprite;
+
+            const style = new TextStyle({
+                fontFamily: 'Arial',
+                fontSize: 20,
+                fontWeight: 'bold',
+                wordWrap: true,
+                wordWrapWidth: 440,
+            });
+
+            const usernameText = new Text({
+                text: player.username,
+                style
+            });
+
+            usernameText.anchor.set(0.5);
+            usernameText.y = -40;
+
+            playerContainer.addChild(sprite);
+            playerContainer.addChild(usernameText);
+
+            app.stage.addChild(playerContainer);
+            playerContainers[player.id] = playerContainer;
         } 
 
-        sprite.x = player.x;
-        sprite.y = player.y;
+        playerContainer.x = player.x;
+        playerContainer.y = player.y;
     }
 
-    for (const id of Object.keys(players)) {
+    for (const id of Object.keys(playerContainers)) {
         if (!serverPlayers[id]) {
-            app.stage.removeChild(players[id]);
-            delete players[id];
+            app.stage.removeChild(playerContainers[id]);
+            delete playerContainers[id];
         }
     }
 });
 
 socket.on("chatMessage", (message: string) => {
     addChatMessage(message);
+    console.log(message);
 });
 
 socket.on("movePlayers", (serverPlayers: Record<string, {x: number, y: number}>) => {
-    console.log("Received movePlayers event");
 
     for (const id in serverPlayers) {
         let playerData = playersData[id];
@@ -183,7 +218,7 @@ setInterval(() => {
 }, 1000);
 
 function updateCameraPos(delta: Ticker){
-    const localPlayer = players[socket.id];
+    const localPlayer = playerContainers[socket.id];
     if (!localPlayer) return;
 
     const cameraSpeed = 0.4;
@@ -223,6 +258,7 @@ document.addEventListener("contextmenu", function (event) {
 function showPopup(message: string): void {
     const popUp = document.getElementById("popUp") as HTMLElement;
     const popUpText = document.getElementById("popUpText") as HTMLElement;
+    popUp.style.visibility = "visible";
 
     popUpText.textContent = message;
     fadeIn(popUp);
@@ -258,7 +294,14 @@ document.getElementById("startGameButton")?.addEventListener("click", () => {
     }catch{
         showPopup("Failed!");
     }
-    
+});
+
+socket.on("connect_error", (error: string) => {
+    showPopup(error);
+});
+
+socket.on("error", (error: string) => {
+    showPopup(error);
 });
 
 document.querySelector("#popUp button")?.addEventListener("click", () => {

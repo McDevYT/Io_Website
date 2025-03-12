@@ -35,7 +35,7 @@ io.on('connection', (socket) => {
     console.log(Object.values(players).length);
     io.emit("updatePlayers", players);
     socket.on("chatMessage", (message) => {
-        socket.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+        io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
     });
     socket.on("move", (keysPressed) => {
         if (players[socket.id]) {

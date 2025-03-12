@@ -49,7 +49,7 @@ io.on('connection', (socket: Socket) => {
     io.emit("updatePlayers", players);
 
     socket.on("chatMessage", (message: string) =>{
-        socket.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+        io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
     });
 
     socket.on("move", (keysPressed: Record<string, boolean>) => {
