@@ -1,6 +1,10 @@
 import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
+import { Player } from './types';
+import { executeCommand } from './consoleHandler';
+
+export const players: Record<string, Player> = {};
 
 const positionEmitIntervall = 25;
 
@@ -13,18 +17,6 @@ const io = new Server(server, {
     }
 });
 
-interface Player {
-    id: string;
-    x: number;
-    y: number;
-    rotation: number;
-    texture: string;
-    username: string;
-    speed: number;
-    keys: Record<string, boolean>;
-}
-
-const players: Record<string, Player> = {};
 
 io.on('connection', (socket: Socket) => {
     console.log(`Player ${socket.id} connected`);
@@ -40,11 +32,12 @@ io.on('connection', (socket: Socket) => {
             y: 0,
             rotation: 90,
             texture: "player_4.png",
-            username: username,
+            username: username.replace(" ", ""),
             speed: 500,
-            keys: {}
+            health: 10,
+            keys: {},
+            isAdmin: false
         };
-
 
         console.log(Object.values(players).length);
     
@@ -52,7 +45,10 @@ io.on('connection', (socket: Socket) => {
 
         const handleChatMessage = (message: string) => {
             console.log( `${players[socket.id].username}: ${message}`);
-            io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+            if (!message.startsWith("/"))
+                io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
+            else
+                executeCommand(message, socket.id);
         };
 
         const handleMove = (keysPressed: Record<string, boolean>) => {
@@ -82,7 +78,6 @@ io.on('connection', (socket: Socket) => {
         socket.on("move", handleMove);
         socket.on("rotate", handleRotate);
         socket.on("leaveGame", handleLeaveGame);
-
     });
     
     socket.on('disconnect', () => {
@@ -126,3 +121,17 @@ setInterval(()=>{
 server.listen(3000,"0.0.0.0", () => {
     console.log(`Server is running on port 3000`);
 });
+
+export function getIdFromUsername(username: string){
+    const id = Object.values(players).find((player) => player.username == username)?.id || "";
+    return id;
+}
+
+export function getPlayerFromUsername(username: string){
+    const player = Object.values(players).find((player) => player.username == username)
+    return player;
+}
+
+export function disconnectSocket(id: string){
+    io.sockets.sockets.get(id)?.disconnect(true);
+}

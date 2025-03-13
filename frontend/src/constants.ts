@@ -21,4 +21,4 @@ export const ASSETS = [
     "backgroundTile.png",
 ];
 
-export const SERVER_IP = "http://10.6.11.18:3000";
+export const SERVER_IP = "http://localhost:3000";

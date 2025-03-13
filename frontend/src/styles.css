@@ -71,14 +71,14 @@ button{
     padding: 40px;
     border-radius: 10px;
     z-index: 3;
-    pointer-events: none;
     animation: fadeIn 1s forwards;
-    opacity: 0;
     -webkit-transition: opacity 0.3s ease-in-out;
     -moz-transition: opacity 0.3s ease-in-out;
     -ms-transition: opacity 0.3s ease-in-out;
     -o-transition: opacity 0.3s ease-in-out;
     transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+    opacity: 0;
     user-select: none;
 }
 
@@ -151,7 +151,7 @@ button{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.523);
+    background-color: rgba(0, 0, 0, 0.719);
     padding: 30px;
     border-radius: 10px;
     z-index: 3;

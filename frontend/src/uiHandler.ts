@@ -1,5 +1,9 @@
 const chatMessages = document.getElementById("chatMessages") as HTMLUListElement;
 const pingText = document.getElementById("topBarText") as HTMLParagraphElement;
+const gameOverlay = document.getElementById("gameOverlay") as HTMLDivElement;
+const escapeMenu = document.getElementById("escapeMenu") as HTMLDivElement;
+const mainMenu = document.getElementById("mainMenu") as HTMLDivElement;
+
 
 export function showPopup(message: string): void {
     const popUp = document.getElementById("popUp") as HTMLElement;
@@ -16,8 +20,10 @@ export function hidePopup(): void {
 
 export function fadeIn(element: HTMLElement) {
     element.style.opacity = '1';
+    element.addEventListener('transitionend', () => {
+        element.style.pointerEvents = 'auto';
+    }, { once: true });
     element.classList.remove('fade');
-    element.style.pointerEvents = 'auto';
 }
 
 export function fadeOut(element: HTMLElement) {
@@ -41,4 +47,18 @@ export function addChatMessage(message: string){
 
 export function setPingText(ping: number){
     pingText.textContent = `Ping: ${ping} ms`;
+}
+
+export function switchOverlay(overlay?: string){
+    fadeOut(mainMenu);
+    fadeOut(gameOverlay);
+    fadeOut(escapeMenu);
+
+    switch(overlay){
+        case "mainMenu":
+            fadeIn(mainMenu);
+            break;
+        case "gameOverlay":
+            fadeIn(gameOverlay);
+    }
 }

@@ -1,13 +1,12 @@
 import * as socket from "./socketHandler";
 import * as gameLogic from "./gameLogic";
-import {showPopup, hidePopup, fadeIn, fadeOut} from "./uiHandler";
+import {showPopup, hidePopup, fadeIn, fadeOut, switchOverlay} from "./uiHandler";
 
 
 const chatInput = document.getElementById("chatInput") as HTMLInputElement;
 const usernameInput = document.getElementById("usernameInput") as HTMLInputElement;
-const gameOverlay = document.getElementById("gameOverlay") as HTMLDivElement;
 const escapeMenu = document.getElementById("escapeMenu") as HTMLDivElement;
-const mainMenu = document.getElementById("mainMenu") as HTMLDivElement;
+
 
 
 (async function loadAssets() {
@@ -28,8 +27,7 @@ function startGame(){
     const username = (usernameInput.value.trim()) ? usernameInput.value : "New Player";
     socket.emitJoinGame(username);
     gameLogic.startGame();
-    fadeOut(mainMenu);
-    fadeIn(gameOverlay);
+    switchOverlay("gameOverlay");
 }
 
 window.addEventListener("keydown", (event) => {
@@ -37,11 +35,11 @@ window.addEventListener("keydown", (event) => {
     gameLogic.keyChanged(key, true);
 
     if (key === "escape") {
-        if (escapeMenu.style.opacity === '0'){
-            fadeIn(escapeMenu);
+        if (escapeMenu.style.opacity === '1'){
+            fadeOut(escapeMenu);
         }
         else{
-            fadeOut(escapeMenu);
+            fadeIn(escapeMenu);
         }
     }
 });
@@ -50,6 +48,10 @@ window.addEventListener("keyup", (event) => {
     const key = event.key.toLowerCase();
     gameLogic.keyChanged(key, false);
 });
+
+usernameInput.addEventListener("input", () =>{
+    usernameInput.value = usernameInput.value.replace(" ", "");
+})
 
 chatInput.addEventListener("keydown", (event) =>{
     const message = chatInput.value;
@@ -80,7 +82,6 @@ document.querySelector("#popUp button")?.addEventListener("click", hidePopup);
 
 function leaveGame(){
     gameLogic.leaveGame();
-    socket.leaveGame();
-    fadeOut(gameOverlay);
-    fadeIn(mainMenu);
+    socket.disconnectGame();
+    switchOverlay("mainMenu");
 }

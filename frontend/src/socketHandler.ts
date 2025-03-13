@@ -1,8 +1,8 @@
 import { SOCKET_EVENTS, SERVER_IP } from "./constants";
-import { updatePlayers, movePlayers, rotatePlayers } from './gameLogic';
-import { showPopup, addChatMessage, setPingText } from "./uiHandler";
+import { updatePlayers, movePlayers, rotatePlayers, leaveGame } from './gameLogic';
+import { showPopup, addChatMessage, setPingText, switchOverlay } from "./uiHandler";
 
-const socket = io(SERVER_IP);
+let socket = io(SERVER_IP);
 
 export let ping: any;
 export let id: any;
@@ -17,6 +17,7 @@ socket.on(SOCKET_EVENTS.ERROR, (error: string) => {
 
 socket.on('connect', () => {
     id = socket.id;
+
 });
 
 export function initializeSocketHandlers() {
@@ -26,7 +27,7 @@ export function initializeSocketHandlers() {
     socket.on(SOCKET_EVENTS.ROTATE_PLAYERS, rotatePlayers);
 }
 
-export function leaveGame(){
+export function disconnectGame(){
     socket.off(SOCKET_EVENTS.UPDATE_PLAYERS, updatePlayers);
     socket.off(SOCKET_EVENTS.CHAT_MESSAGE, addChatMessage);
     socket.off(SOCKET_EVENTS.MOVE_PLAYERS, movePlayers);
@@ -66,3 +67,10 @@ setInterval(() => {
 }, 1000);
 
 export default socket;
+
+socket.on('disconnect', ()=>{
+    switchOverlay("mainMenu");
+    showPopup("Disconnected!");
+    leaveGame();
+    socket = io(SERVER_IP);
+});
