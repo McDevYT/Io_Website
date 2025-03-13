@@ -47,17 +47,19 @@ io.on('connection', (socket) => {
                 players[socket.id].rotation = angle;
             }
         };
-        socket.on("chatMessage", handleChatMessage);
-        socket.on("move", handleMove);
-        socket.on("rotate", handleRotate);
-        socket.on("leaveGame", () => {
+        const handleLeaveGame = () => {
             socket.off("chatMessage", handleChatMessage);
             socket.off("move", handleMove);
             socket.off("rotate", handleRotate);
+            socket.off("leaveGame", handleLeaveGame);
             console.log(`Player ${socket.id} left the game`);
             delete players[socket.id];
             io.emit("updatePlayers", players);
-        });
+        };
+        socket.on("chatMessage", handleChatMessage);
+        socket.on("move", handleMove);
+        socket.on("rotate", handleRotate);
+        socket.on("leaveGame", handleLeaveGame);
     });
     socket.on('disconnect', () => {
         console.log(`Player ${socket.id} disconnected`);

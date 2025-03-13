@@ -2,6 +2,8 @@ import { Application, Assets, Container, Point, Sprite, Texture, Ticker, TilingS
 
 let app: Application;
 
+let inGame = false;
+
 const textures: Record<string, Texture> = {};
 const playerContainers: Record<string, Container> = {};
 const playersSprites: Record<string, Sprite> = {};
@@ -11,13 +13,12 @@ const keysPressed: Record<string, boolean> = {};
 const chatMessages = document.getElementById("chatMessages") as HTMLUListElement;
 const chatInput = document.getElementById("chatInput") as HTMLInputElement;
 const usernameInput = document.getElementById("usernameInput") as HTMLInputElement;
+const gameOverlay = document.getElementById("gameOverlay") as HTMLDivElement;
 
 const pingText = document.getElementById("topBarText") as HTMLParagraphElement;
 let ping: any;
 
 let background: TilingSprite;
-
-let username: String = "New User";
 
 interface Player {
     id: string;
@@ -75,8 +76,11 @@ const socket = io('http://10.6.11.18:3000');
 function startGame(){
     fadeOut(document.getElementById("mainMenu") as HTMLElement);
 
-    const username = usernameInput.value;
+    const username = (usernameInput.value.trim()) ? usernameInput.value : "New Player";
     socket.emit("joinGame", username);
+
+    inGame = true;
+    fadeIn(gameOverlay);
 
     app.ticker.add(update);
     document.addEventListener("pointermove", (e) =>{
@@ -92,6 +96,19 @@ function startGame(){
 }
 
 function update(delta: Ticker){
+
+    /*const player = playersData[socket.id];
+    if (player){
+
+        if (player.keys.w) player.y -= player.speed * delta.deltaTime; 
+        if (player.keys.s) player.y += player.speed * delta.deltaTime; 
+        if (player.keys.a) player.x -= player.speed * delta.deltaTime; 
+        if (player.keys.d) player.x += player.speed * delta.deltaTime; 
+    
+        player.x = Math.max(-500, Math.min(player.x, 500));
+        player.y = Math.max(-500, Math.min(player.y, 500));
+    }*/
+
     for (const id in playerContainers) {
         const spriteContainer = playerContainers[id];
         const playerData = playersData[id];
@@ -199,7 +216,14 @@ window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
     if(!keysPressed[key]){
         keysPressed[key] = true;
+        playersData[socket.id].keys = keysPressed;
         socket.emit("move", keysPressed);
+    }
+
+    if (key === "escape") {
+        if (inGame) {
+            leaveGame();
+        }
     }
 });
 
@@ -207,6 +231,7 @@ window.addEventListener("keyup", (event) => {
     const key = event.key.toLowerCase();
     if(keysPressed[key]){
         keysPressed[key] = false;
+        playersData[socket.id].keys = keysPressed;
         socket.emit("move", keysPressed);
     }
 });
@@ -249,6 +274,7 @@ chatInput.addEventListener("keydown", (event) =>{
     const message = chatInput.value;
     if (event.key == "Enter" && message.trim()){
         event.preventDefault();
+        
         socket.emit("chatMessage", message);
         chatInput.value = "";
     }
@@ -261,7 +287,6 @@ document.addEventListener("contextmenu", function (event) {
 function showPopup(message: string): void {
     const popUp = document.getElementById("popUp") as HTMLElement;
     const popUpText = document.getElementById("popUpText") as HTMLElement;
-    popUp.style.visibility = "visible";
 
     popUpText.textContent = message;
     fadeIn(popUp);
@@ -292,10 +317,10 @@ function fadeOut(element: HTMLElement){
 }
 
 document.getElementById("startGameButton")?.addEventListener("click", () => {
-    try{
+    try {
         startGame();
-    }catch{
-        showPopup("Failed!");
+    }catch (error) {
+        showPopup(error as string);
     }
 });
 
@@ -310,3 +335,11 @@ socket.on("error", (error: string) => {
 document.querySelector("#popUp button")?.addEventListener("click", () => {
     hidePopup();
 });
+
+function leaveGame(){
+    socket.emit("leaveGame");
+    app.ticker.remove(update);
+    inGame = false;
+    fadeOut(gameOverlay);
+    fadeIn(document.getElementById("mainMenu") as HTMLElement);
+}

@@ -16,15 +16,70 @@ body {
     color: #fff;
 }
 
-#canvasOverlay {
+p {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+input {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    border: none;
+    width: 200px;
+    font-size: 18px;
+    background-color: #333;
+    color: white;
+    outline: transparent;
+}
+
+button{
+    margin: 7px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+#gameOverlay {
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
     z-index: 1;
-    user-select: none;
     pointer-events: visible;
+    -webkit-transition: opacity 0.3s ease-in-out;
+    -moz-transition: opacity 0.3s ease-in-out;
+    -ms-transition: opacity 0.3s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    user-select: none;
+    opacity: 0;
+}
+
+#escapeMenu {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.493);
+    padding: 40px;
+    border-radius: 10px;
+    z-index: 3;
+    pointer-events: none;
+    animation: fadeIn 1s forwards;
+    opacity: 0;
+    -webkit-transition: opacity 0.3s ease-in-out;
+    -moz-transition: opacity 0.3s ease-in-out;
+    -ms-transition: opacity 0.3s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    user-select: none;
 }
 
 #chatContainer {
@@ -34,18 +89,25 @@ body {
     background-color: rgba(0, 0, 0, 0.7);
     padding: 10px;
     border-radius: 5px;
+    width: 300px;
     z-index: 2;
+    
 }
 
 #chatMessages {
     list-style-type: none;
     max-height: 200px;
     overflow-y: auto;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
 }
 
 #chatInput {
     width: 100%;
     padding: 5px;
+    margin: 0;
     margin-top: 10px;
     border: none;
     border-radius: 5px;
@@ -74,31 +136,9 @@ body {
     user-select: none;
 }
 
-#mainMenu p {
-    font-size: 36px;
-    margin-bottom: 20px;
-}
-
-#mainMenu input {
-    padding: 10px;
-    margin: 10px;
-    border-radius: 5px;
-    border: none;
-    width: 200px;
-    font-size: 18px;
-    background-color: #333;
-    color: white;
-    outline: transparent;
-}
 
 #startGameButton {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
     background-color: #007bff;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
 }
 
 #startGameButton:hover {

@@ -10,7 +10,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script defer type="module" src="src/script.ts"></script>
 
-    <div id="canvasOverlay">
+    <div id="gameOverlay">
         <p id="topBarText">ping: 0ms</p>
         <div id="chatContainer">
             <ul id="chatMessages"></ul>
@@ -18,10 +18,16 @@
         </div>
     </div>
 
+    <div id="escapeMenu">
+        <button id="resumeGameButton">Resume</button>
+        <button id="settingsButton">Settings</button>
+        <button id="exitGameButton">Exit</button>
+    </div>
+
     <div id="mainMenu">
         <p>Game dot Io</p>
-        <input type="text" id="usernameInput" placeholder="Enter your username..." autocomplete="off"/>
-        <button id="startGameButton">Start Game</button>
+        <input type="text" id="usernameInput" placeholder="Enter username..." autocomplete="off"/>
+        <button id="startGameButton">Play</button>
     </div>
 
     <div id="popUp">
