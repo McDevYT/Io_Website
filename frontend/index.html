@@ -8,25 +8,25 @@
 </head>
 <body>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script defer type="module" src="src/script.ts"></script>
+    <script defer type="module" src="src/main.ts"></script>
 
     <div id="gameOverlay">
         <p id="topBarText">ping: 0ms</p>
         <div id="chatContainer">
             <ul id="chatMessages"></ul>
-            <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" />
+            <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="200"/>
         </div>
     </div>
 
     <div id="escapeMenu">
         <button id="resumeGameButton">Resume</button>
         <button id="settingsButton">Settings</button>
-        <button id="exitGameButton">Exit</button>
+        <button id="leaveGameButton">Leave Game</button>
     </div>
 
     <div id="mainMenu">
         <p>Game dot Io</p>
-        <input type="text" id="usernameInput" placeholder="Enter username..." autocomplete="off"/>
+        <input type="text" id="usernameInput" placeholder="Enter username..." autocomplete="off" maxlength="20"/>
         <button id="startGameButton">Play</button>
     </div>
 

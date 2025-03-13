@@ -44,12 +44,14 @@ io.on('connection', (socket: Socket) => {
             speed: 500,
             keys: {}
         };
-    
+
+
         console.log(Object.values(players).length);
     
         io.emit("updatePlayers", players);
 
         const handleChatMessage = (message: string) => {
+            console.log( `${players[socket.id].username}: ${message}`);
             io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
         };
 

@@ -35,6 +35,7 @@ io.on('connection', (socket) => {
         console.log(Object.values(players).length);
         io.emit("updatePlayers", players);
         const handleChatMessage = (message) => {
+            console.log(`${players[socket.id].username}: ${message}`);
             io.emit("chatMessage", `${players[socket.id].username}: ${message}`);
         };
         const handleMove = (keysPressed) => {
