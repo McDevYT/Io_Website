@@ -1,9 +1,11 @@
-import {  Assets, Container, Point, Sprite, Texture, Ticker, TilingSprite, Text, TextStyle, Application } from "pixi.js";
+import {  Assets, Container, Point, Texture, Ticker, TilingSprite, Text, TextStyle, Application, Sprite } from "pixi.js";
 import { Player } from './types';
 import * as socket from "./socketHandler";
 import { ASSETS } from "./constants";
 
 export let app: Application = new Application();
+
+let socketID = "";
 
 export let keysPressed: Record<string, boolean> = {};
 export const textures: Record<string, Texture> = {};
@@ -18,13 +20,14 @@ export async function initializeGame() {
     app.stage.pivot.set(-app.screen.width, -app.screen.height);
 
     await Promise.all(ASSETS.map(async (name) =>{
-        textures[name] = await Assets.load(name);
+        textures[name] = await Assets.load({src: name});
+        console.log(textures[name]);
     }));
 
     background = new TilingSprite({
             texture: textures["backgroundTile.png"],
-            width: 2000,
-            height: 1000,
+            width: 530,
+            height: 530,
             scale: 2,
         }
     );
@@ -37,23 +40,25 @@ export async function initializeGame() {
 }
 
 export function startGame(){
-
+    socketID = socket.getSocketID();
     app.ticker.add(update);
-    document.addEventListener("pointermove", (e) =>{
-        const playerContainer = playerContainers[socket.id];
-        if (!playerContainer) return;
+    document.addEventListener("pointermove", pointerMove);
+}
 
-        const mousePos = app.stage.toLocal(new Point(e.pageX, e.pageY));
-    
-        const angle = Math.atan2(mousePos.y - playerContainer.y, mousePos.x - playerContainer.x );
-        playerContainer.children[0].rotation = angle;
-        socket.emitRotate(angle);
-    });
+function pointerMove(e: PointerEvent) {
+    const playerContainer = playerContainers[socketID];
+    if (!playerContainer) return;
+
+    const mousePos = app.stage.toLocal(new Point(e.pageX, e.pageY));
+
+    const angle = Math.atan2(mousePos.y - playerContainer.y, mousePos.x - playerContainer.x );
+    playerContainer.children[0].rotation = angle;
+    socket.emitRotate(angle);
 }
 
 function update(delta: Ticker){
 
-    /*const player = playersData[socket.id];
+    /*const player = playersData[socketID];
     if (player){
 
         if (player.keys.w) player.y -= player.speed * delta.deltaTime; 
@@ -75,7 +80,7 @@ function update(delta: Ticker){
         spriteContainer.x += (playerData.x - spriteContainer.x) * lerpFactor * delta.deltaTime;
         spriteContainer.y += (playerData.y - spriteContainer.y) * lerpFactor * delta.deltaTime;
 
-        if (id !== socket.id) {
+        if (id !== socketID) {
             const rotationLerpFactor = 0.16;
             let targetRotation = playerData.rotation;
             let currentRotation = spriteContainer.children[0].rotation;
@@ -96,21 +101,22 @@ function rLerp (A:number, B:number, w:number) {
 }
 
 export function updatePlayers(serverPlayers: Record<string, Player>) {
-   console.log(serverPlayers[socket.id]);
+   console.log(Object.keys(serverPlayers)[0] == socketID);
+   console.log(socketID);
     for (const player of Object.values(serverPlayers)) {
         let playerContainer = playerContainers[player.id];
 
         players[player.id] = player;
 
         if (!playerContainer) {
-            const texture = textures[player.texture] || textures["player_1.png"];
+            const texture = textures[player.texture] || textures["player1.png"];
             const sprite = new Sprite(texture);
             playerContainer = new Container();
             playerContainers[player.id] = playerContainer;
             playersSprites[player.id] = sprite;
 
             sprite.anchor = 0.5;
-            sprite.scale = 2.5;
+            sprite.scale = 0.8;
 
             const style = new TextStyle({
                 fontFamily: 'Arial',
@@ -150,7 +156,7 @@ export function updatePlayers(serverPlayers: Record<string, Player>) {
 export function keyChanged(key: string, isPressed: boolean) {
     if (Object.values(players).length && keysPressed[key] !== isPressed) {
         keysPressed[key] = isPressed;
-        players[socket.id].keys = keysPressed; 
+        players[socketID].keys = keysPressed; 
         socket.emitMove(keysPressed);
     }
 }
@@ -172,7 +178,7 @@ export function rotatePlayers(playerRotations: Record<string, number>) {
 }
 
 function updateCameraPos(delta: Ticker){
-    const localPlayer = playerContainers[socket.id];
+    const localPlayer = playerContainers[socketID];
     if (!localPlayer) return;
 
     const cameraSpeed = 0.4;
@@ -184,6 +190,8 @@ function updateCameraPos(delta: Ticker){
 
     app.stage.x += (targetX - app.stage.x) * cameraSpeed * delta.deltaTime;
     app.stage.y += (targetY - app.stage.y) * cameraSpeed * delta.deltaTime;
+    
+    app.stage.pivot.set(-app.screen.width, -app.screen.height);
 }
 
 export function leaveGame(){
@@ -191,6 +199,8 @@ export function leaveGame(){
 
     cleareGameData();
 
+    
+    document.removeEventListener("pointermove", pointerMove);
     app.ticker.remove(update);
 }
 

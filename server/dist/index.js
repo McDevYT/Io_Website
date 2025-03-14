@@ -7,6 +7,7 @@ exports.players = void 0;
 exports.getIdFromUsername = getIdFromUsername;
 exports.getPlayerFromUsername = getPlayerFromUsername;
 exports.disconnectSocket = disconnectSocket;
+exports.showGameAlert = showGameAlert;
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
@@ -32,14 +33,14 @@ io.on('connection', (socket) => {
             x: 0,
             y: 0,
             rotation: 90,
-            texture: "player_4.png",
+            texture: "player1.png",
             username: username.replace(" ", ""),
             speed: 500,
             health: 10,
             keys: {},
             isAdmin: false
         };
-        console.log(Object.values(exports.players).length);
+        console.log(`Player ${username} with id ${socket.id} joined the game`);
         io.emit("updatePlayers", exports.players);
         const handleChatMessage = (message) => {
             console.log(`${exports.players[socket.id].username}: ${message}`);
@@ -125,4 +126,7 @@ function getPlayerFromUsername(username) {
 }
 function disconnectSocket(id) {
     io.sockets.sockets.get(id)?.disconnect(true);
+}
+function showGameAlert(alert) {
+    io.sockets.emit("showAlert", alert);
 }

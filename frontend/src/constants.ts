@@ -14,11 +14,15 @@ export const SOCKET_EVENTS = {
 };
 
 export const ASSETS = [
-    "player_1.png",
-    "player_2.png",
-    "player_3.png",
-    "player_4.png",
+    "player1.png",
+    "player2.png",
+    "player3.png",
+    "player4.png",
+    "player5.png",
+    "player6.png",
+    "player7.png",
+    "player8.png",
     "backgroundTile.png",
 ];
 
-export const SERVER_IP = "http://localhost:3000";
+export const SERVER_IP = "http://10.6.11.18:3000";

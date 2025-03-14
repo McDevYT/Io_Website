@@ -11,12 +11,17 @@
     <script defer type="module" src="src/main.ts"></script>
 
     <div id="gameOverlay">
-        <p id="topBarText">ping: 0ms</p>
-        <div id="chatContainer">
-            <ul id="chatMessages"></ul>
-            <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="200"/>
+        <div id="gameUI">
+            <p id="pingText">ping: 0ms</p>
+            <div id="chatContainer">
+                <ul id="chatMessages"></ul>
+                <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="200"/>
+            </div>
         </div>
-    </div>
+        <div id="overlayAlert">
+            <p id="overlayTitle">Game Started</p>
+        </div>
+    </div> 
 
     <div id="escapeMenu">
         <button id="resumeGameButton">Resume</button>

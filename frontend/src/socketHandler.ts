@@ -1,24 +1,44 @@
 import { SOCKET_EVENTS, SERVER_IP } from "./constants";
 import { updatePlayers, movePlayers, rotatePlayers, leaveGame } from './gameLogic';
-import { showPopup, addChatMessage, setPingText, switchOverlay } from "./uiHandler";
+import { showPopup, addChatMessage, setPingText, switchOverlay, showGameAlert } from "./uiHandler";
 
 let socket = io(SERVER_IP);
+
 
 export let ping: any;
 export let id: any;
 
-socket.on(SOCKET_EVENTS.CONNECT_ERROR, (error: string) => {
+const disconnected = () => {
+    switchOverlay("mainMenu");
+    console.log("Disconnected!");
+    showPopup("Disconnected!");
+    leaveGame();
+    
+    setTimeout(() => {
+        if (!socket.connected) {
+            console.log("Attempting to reconnect...");
+            socket.connect(); // Explicitly reconnect
+        }
+    }, 200);
+};
+
+const error = (error: string) => {
     showPopup('Failed to connect to server: ' + error);
-});
+};
 
-socket.on(SOCKET_EVENTS.ERROR, (error: string) => {
-    showPopup('Error: ' + error);
-});
-
-socket.on('connect', () => {
+const connected = () => {
+    socket.removeAllListeners();
     id = socket.id;
+    console.log(`Changed id to ${id}`);
+    socket.on(SOCKET_EVENTS.CONNECT_ERROR, error);
+    socket.on(SOCKET_EVENTS.ERROR, error);
+    socket.on('showAlert', showAlert);
+    socket.on('disconnect', disconnected);
+};
 
-});
+const showAlert = (alert: string) => {
+    showGameAlert(alert);
+};
 
 export function initializeSocketHandlers() {
     socket.on(SOCKET_EVENTS.UPDATE_PLAYERS, updatePlayers);
@@ -57,20 +77,20 @@ export function getSocketID(){
     return socket.id;
 }
 
+socket.once('connect', connected);
+
 setInterval(() => {
-    const start = Date.now();
-    
-    socket.emit("ping", () => {
-        ping = Date.now() - start;
-    });
-    setPingText(ping);
+    if (socket.connected){
+        const start = Date.now();
+        
+        socket.emit("ping", () => {
+            ping = Date.now() - start;
+        });
+        setPingText(ping);
+    }
+    else{
+        setPingText(-1);
+    }
 }, 1000);
 
 export default socket;
-
-socket.on('disconnect', ()=>{
-    switchOverlay("mainMenu");
-    showPopup("Disconnected!");
-    leaveGame();
-    socket = io(SERVER_IP);
-});

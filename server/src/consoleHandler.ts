@@ -1,6 +1,7 @@
 import readline from "readline";
 import {  Command, CommandHandler } from "./types";
-import {  players, getIdFromUsername, getPlayerFromUsername, disconnectSocket } from "./index";
+import {  players, getIdFromUsername, getPlayerFromUsername, disconnectSocket, showGameAlert } from "./index";
+import { ADMIN_PW } from "./constants";
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -25,7 +26,13 @@ export function executeCommand(commandMessage: string, sender: string){
         return;
     }
 
-    command.execute(args, sender);
+
+    try{
+        command.execute(args, sender);
+    }
+    catch (error){
+        console.log(`[ERROR] Error executing command: ${error}`);
+    }
 }
 
 rl.on("line", (input) =>{
@@ -66,9 +73,64 @@ registerCommand({
 
         const player = getPlayerFromUsername(args[0] || " ");
         if(!player) return;
-        console.log(`[INFO] ${sender || "Console"} made ${player.username} an admin`);
-        player.isAdmin = true;
-        
+        player.isAdmin = !player.isAdmin;
+        console.log(`[INFO] ${sender || "Console"} ${(player.isAdmin) ? "gave" : "removed"} admin to ${player.username}`);
     }
 });
 
+registerCommand({
+    name: "login",
+    adminOnly: false,
+    execute: (args, sender) =>{
+        if (args.length < 1) {
+            console.log("[ERROR] Usage: /login <passwort>");
+            return;
+        }
+        console.log(args[0]);
+
+        if(args[0] != ADMIN_PW || !sender) return;
+
+        players[sender].isAdmin = true;
+        console.log(`[INFO] ${players[sender].username} logged in as admin`);
+    }
+});
+
+registerCommand({
+    name: "speed",
+    adminOnly: true,
+    execute: (args, sender) =>{
+        if (args.length < 1) {
+            console.log("[ERROR] Usage: /speed <username> <amount>");
+            return;
+        }
+        console.log(args[0]);
+
+        if (args.length >= 2){
+            const player = getPlayerFromUsername(args[0] || " ");
+            if(!player) return;
+            player.speed = parseFloat(args[1]);
+            console.log(`[INFO] ${sender || "Console"} set speed of ${player.username}`);
+        }
+        else{
+            if (!players[sender]) return;
+            players[sender].speed = parseFloat(args[0]);
+            console.log(`[INFO] ${sender || "Console"} set speed of ${players[sender].username}`);
+        }
+    }
+});
+
+registerCommand({
+    name: "alert",
+    adminOnly: true,
+    execute: (args, sender) =>{
+        if (args.length < 1) {
+            console.log("[ERROR] Usage: /alert <alert>");
+            return;
+        }
+
+        const alert = args.join(" ");
+        if(!alert) return;
+        showGameAlert(alert);
+        console.log(`[INFO] ${sender || "Console"} showed alert: ${alert}`);
+    }
+});

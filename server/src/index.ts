@@ -17,7 +17,6 @@ const io = new Server(server, {
     }
 });
 
-
 io.on('connection', (socket: Socket) => {
     console.log(`Player ${socket.id} connected`);
 
@@ -31,7 +30,7 @@ io.on('connection', (socket: Socket) => {
             x: 0,
             y: 0,
             rotation: 90,
-            texture: "player_4.png",
+            texture: "player1.png",
             username: username.replace(" ", ""),
             speed: 500,
             health: 10,
@@ -39,7 +38,7 @@ io.on('connection', (socket: Socket) => {
             isAdmin: false
         };
 
-        console.log(Object.values(players).length);
+        console.log(`Player ${username} with id ${socket.id} joined the game`);
     
         io.emit("updatePlayers", players);
 
@@ -134,4 +133,8 @@ export function getPlayerFromUsername(username: string){
 
 export function disconnectSocket(id: string){
     io.sockets.sockets.get(id)?.disconnect(true);
+}
+
+export function showGameAlert(alert: string){
+    io.sockets.emit("showAlert", alert);
 }

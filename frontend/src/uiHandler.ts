@@ -1,5 +1,6 @@
 const chatMessages = document.getElementById("chatMessages") as HTMLUListElement;
-const pingText = document.getElementById("topBarText") as HTMLParagraphElement;
+const pingText = document.getElementById("pingText") as HTMLParagraphElement;
+const gameTitle = document.getElementById("overlayTitle") as HTMLParagraphElement;
 const gameOverlay = document.getElementById("gameOverlay") as HTMLDivElement;
 const escapeMenu = document.getElementById("escapeMenu") as HTMLDivElement;
 const mainMenu = document.getElementById("mainMenu") as HTMLDivElement;
@@ -46,7 +47,7 @@ export function addChatMessage(message: string){
 }
 
 export function setPingText(ping: number){
-    pingText.textContent = `Ping: ${ping} ms`;
+    pingText.innerText = `Ping: ${ping} ms`;
 }
 
 export function switchOverlay(overlay?: string){
@@ -61,4 +62,16 @@ export function switchOverlay(overlay?: string){
         case "gameOverlay":
             fadeIn(gameOverlay);
     }
+}
+
+export function showGameAlert(alert: string, duration: number = 3000, color: string = "#FBFF00"){
+    gameTitle.innerText = alert;
+    gameTitle.style.color = color;
+    fadeIn(gameTitle);
+
+    console.log("showing Game Alert: ", alert);
+
+    setTimeout(() =>{
+        fadeOut(gameTitle);
+    }, duration);
 }

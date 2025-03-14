@@ -11,7 +11,7 @@ export interface Player {
     isAdmin: boolean;
 }
 
-export type CommandHandler = (args: string[], sender?: string) => void;
+export type CommandHandler = (args: string[], sender: string) => void;
 export interface Command {
     name: string;
     execute: CommandHandler;

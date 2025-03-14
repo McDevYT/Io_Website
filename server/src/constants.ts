@@ -1,0 +1,1 @@
+export const ADMIN_PW = "821480865132";
